@@ -21,4 +21,4 @@ class DatabaseConfig:
     connection_timeout: int = int(getenv("DB_CONNECTION_TIMEOUT", "5"))
 
 
-APP_NAME = "Fitness Club IS"
+APP_NAME = "Модуль управления фитнес-клубом"

@@ -22,6 +22,7 @@ from src.repositories.catalogs import (
 from src.repositories.reports import ReportsRepository
 from src.services.visit_service import VisitService
 from src.services.workout_service import WorkoutService
+from src.ui.management_page import ManagementPage
 from src.ui.pages import CrudPage, DashboardPage, ReportsPage, SchedulePage, VisitsPage
 
 
@@ -30,7 +31,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.repositories = repositories
         self.user = user
-        self.setWindowTitle("Fitness Club IS")
+        self.setWindowTitle("Модуль управления фитнес-клубом")
         self.setWindowIcon(QIcon("assets/app_icon.svg"))
         self.resize(1280, 760)
 
@@ -46,7 +47,7 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(18, 22, 18, 18)
         sidebar_layout.setSpacing(8)
 
-        brand = QLabel("Fitness Club")
+        brand = QLabel("Модуль управления")
         brand.setObjectName("Brand")
         user_label = QLabel(f"{user['full_name']} | {user['role']}")
         user_label.setStyleSheet("color: #aeb8cc; background: transparent;")
@@ -102,6 +103,7 @@ class MainWindow(QMainWindow):
 
         return [
             ("Дашборд", DashboardPage(self.repositories)),
+            ("Управление", ManagementPage(reports)),
             (
                 "Клиенты",
                 CrudPage(

@@ -165,3 +165,97 @@ class ReportsRepository:
                 ),
             )
             return cursor.fetchone()
+
+    def management_summary(self) -> dict[str, Any]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT
+                    (SELECT COUNT(*) FROM clients WHERE status = 'active') AS active_clients,
+                    (SELECT COUNT(*) FROM memberships WHERE status = 'active') AS active_memberships,
+                    (SELECT COUNT(*) FROM memberships
+                     WHERE status = 'active'
+                       AND (end_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) OR visits_left <= 2)) AS memberships_attention,
+                    (SELECT COUNT(*) FROM visits WHERE DATE(visited_at) = CURDATE()) AS visits_today,
+                    (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE payment_date = CURDATE()) AS revenue_today,
+                    (SELECT COALESCE(SUM(amount), 0)
+                     FROM payments
+                     WHERE YEAR(payment_date) = YEAR(CURDATE())
+                       AND MONTH(payment_date) = MONTH(CURDATE())) AS revenue_month,
+                    (SELECT COUNT(*) FROM workouts WHERE DATE(starts_at) = CURDATE()) AS workouts_today,
+                    (SELECT COUNT(*) FROM workout_registrations wr
+                     JOIN workouts w ON w.id = wr.workout_id
+                     WHERE DATE(w.starts_at) = CURDATE()) AS registrations_today
+                """
+            )
+            return cursor.fetchone()
+
+    def membership_alerts(self) -> list[dict[str, Any]]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT
+                    c.full_name AS client_name,
+                    c.phone,
+                    m.type_name,
+                    m.end_date,
+                    m.visits_left,
+                    CASE
+                        WHEN m.end_date < CURDATE() THEN 'Просрочен'
+                        WHEN m.visits_left = 0 THEN 'Нет посещений'
+                        WHEN m.end_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'Скоро закончится'
+                        WHEN m.visits_left <= 2 THEN 'Мало посещений'
+                        ELSE 'Контроль'
+                    END AS reason
+                FROM memberships m
+                JOIN clients c ON c.id = m.client_id
+                WHERE m.status = 'active'
+                  AND (m.end_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) OR m.visits_left <= 2)
+                ORDER BY m.end_date ASC, m.visits_left ASC
+                LIMIT 30
+                """
+            )
+            return cursor.fetchall()
+
+    def workout_occupancy(self) -> list[dict[str, Any]]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT
+                    w.title,
+                    t.full_name AS trainer_name,
+                    w.starts_at,
+                    w.capacity,
+                    COUNT(wr.id) AS registered_count,
+                    ROUND(COUNT(wr.id) / w.capacity * 100, 1) AS occupancy_percent
+                FROM workouts w
+                JOIN trainers t ON t.id = w.trainer_id
+                LEFT JOIN workout_registrations wr ON wr.workout_id = w.id
+                WHERE w.starts_at >= CURDATE()
+                GROUP BY w.id, w.title, t.full_name, w.starts_at, w.capacity
+                ORDER BY w.starts_at ASC
+                LIMIT 30
+                """
+            )
+            return cursor.fetchall()
+
+    def payment_structure_current_month(self) -> list[dict[str, Any]]:
+        with self.db.connect() as connection:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT
+                    payment_method,
+                    COUNT(*) AS payments_count,
+                    COALESCE(SUM(amount), 0) AS total_amount
+                FROM payments
+                WHERE YEAR(payment_date) = YEAR(CURDATE())
+                  AND MONTH(payment_date) = MONTH(CURDATE())
+                GROUP BY payment_method
+                ORDER BY total_amount DESC
+                """
+            )
+            return cursor.fetchall()
