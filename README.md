@@ -1,8 +1,11 @@
-# Модуль управления фитнес-клубом
+<img width="757" height="467" alt="image" src="https://github.com/user-attachments/assets/2cda9fe4-3294-4680-9222-c5bf4a21716c" /># Модуль управления фитнес-клубом
 
 Дипломное приложение по теме: **«Разработка программного модуля информационной системы управления фитнес-клубом»**.
 
 Проект реализует именно управленческий модуль информационной системы: учет клиентов, абонементов, посещений, оплат, тренеров, расписания, записей на тренировки и оперативный контроль показателей клуба.
+
+<img width="953" height="316" alt="image" src="https://github.com/user-attachments/assets/b43907f2-f36c-4c7a-a989-f38eb6305826" />
+Рисунок 1 — Контекстная схема программного модуля
 
 ## Стек
 
@@ -11,6 +14,8 @@
 - MySQL
 - MySQL Workbench
 
+<img width="835" height="517" alt="image" src="https://github.com/user-attachments/assets/01aae20e-8b68-404f-ab7f-fe6a007affa4" />
+Рисунок 2 — Страница «Дашборд»
 ## Быстрый запуск
 
 1. Создайте базу через `database/schema.sql` в MySQL Workbench.
@@ -67,7 +72,15 @@
 - отчеты с фильтром по периоду;
 - экспорт отчетов в CSV и Excel XLSX.
 
+<img width="757" height="467" alt="image" src="https://github.com/user-attachments/assets/4a53b593-84de-41ca-8d55-9754de6bf131" />
+Рисунок 3 — Раздел управления клиентами
+
+<img width="464" height="793" alt="image" src="https://github.com/user-attachments/assets/0430f523-cdcd-46ed-9e63-d814c2b31bee" />
+Рисунок 4 — Раздел просмотра тренировок в мобильном приложении
+
+
 ## Проверка полного сценария
+
 
 ```powershell
 .\.venv\Scripts\python.exe tests\e2e_smoke.py
